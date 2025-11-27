@@ -1,0 +1,81 @@
+{
+  "name": "auto-translate",
+  "displayName": "Auto Translate",
+  "description": "自动翻译选中文本（中英文互译）并替换",
+  "version": "0.0.1",
+  "publisher": "liuhanchuan",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liuhanchuan/auto-translate-plugin.git"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:autoTranslate.translate"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "autoTranslate.translate",
+        "title": "翻译选中文本"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "autoTranslate.translate",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      }
+    ],
+    "configuration": {
+      "title": "Auto Translate",
+      "properties": {
+        "autoTranslate.translationServices": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["mymemory", "google", "baidu"],
+            "enumDescriptions": [
+              "MyMemory Translation API（免费，无需配置）",
+              "Google Translate API（免费，可能不稳定）",
+              "百度翻译 API（需要配置 API 密钥）"
+            ]
+          },
+          "default": ["mymemory", "google", "baidu"],
+          "description": "翻译服务优先级列表。按顺序尝试使用，如果某个服务失败则尝试下一个。可选值：mymemory（MyMemory API）、google（Google API）、baidu（百度 API）"
+        },
+        "autoTranslate.baiduAppId": {
+          "type": "string",
+          "default": "",
+          "description": "百度翻译API的App ID（可选）"
+        },
+        "autoTranslate.baiduAppKey": {
+          "type": "string",
+          "default": "",
+          "description": "百度翻译API的App Key（可选）"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "install-extension": "code --install-extension *.vsix"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
