@@ -39,14 +39,22 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["mymemory", "google", "baidu"],
+            "enum": [
+              "mymemory",
+              "google",
+              "baidu"
+            ],
             "enumDescriptions": [
               "MyMemory Translation API（免费，无需配置）",
               "Google Translate API（免费，可能不稳定）",
               "百度翻译 API（需要配置 API 密钥）"
             ]
           },
-          "default": ["mymemory", "google", "baidu"],
+          "default": [
+            "mymemory",
+            "google",
+            "baidu"
+          ],
           "description": "翻译服务优先级列表。按顺序尝试使用，如果某个服务失败则尝试下一个。可选值：mymemory（MyMemory API）、google（Google API）、baidu（百度 API）"
         },
         "autoTranslate.baiduAppId": {
@@ -58,6 +66,25 @@
           "type": "string",
           "default": "",
           "description": "百度翻译API的App Key（可选）"
+        },
+        "autoTranslate.englishCaseFormat": {
+          "type": "string",
+          "enum": [
+            "pascal",
+            "camel",
+            "snake",
+            "space",
+            "none"
+          ],
+          "enumDescriptions": [
+            "大驼峰（PascalCase）- 每个单词首字母大写，如：HelloWorld",
+            "小驼峰（camelCase）- 第一个单词小写，后续单词首字母大写，如：helloWorld",
+            "下划线（snake_case）- 单词之间用下划线连接，如：hello_world",
+            "空格（Space Case）- 单词之间用空格连接，如：hello world",
+            "不格式化（None）- 保持翻译结果原样"
+          ],
+          "default": "none",
+          "description": "从中文翻译成英文时的单词连接符格式。仅在中文翻译成英文时生效。"
         }
       }
     }

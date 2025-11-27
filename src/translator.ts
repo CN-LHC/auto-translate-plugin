@@ -123,6 +123,59 @@ async function translateWithGoogleFree(text: string, from: string, to: string): 
 type TranslationService = 'mymemory' | 'google' | 'baidu'
 
 /**
+ * 英文格式类型
+ */
+type EnglishCaseFormat = 'pascal' | 'camel' | 'snake' | 'space' | 'none'
+
+/**
+ * 将英文文本转换为指定格式
+ */
+function formatEnglishText(text: string, format: EnglishCaseFormat): string {
+  if (format === 'none') {
+    return text
+  }
+
+  // 将文本分割成单词（处理各种分隔符和大小写）
+  // 匹配单词边界，包括空格、连字符、下划线等
+  const words = text
+    .trim()
+    .split(/[\s\-_]+/)
+    .filter(word => word.length > 0)
+    .map(word => word.toLowerCase())
+
+  if (words.length === 0) {
+    return text
+  }
+
+  switch (format) {
+    case 'pascal':
+      // 大驼峰：每个单词首字母大写
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+
+    case 'camel':
+      // 小驼峰：第一个单词小写，后续单词首字母大写
+      return (
+        words[0] +
+        words
+          .slice(1)
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join('')
+      )
+
+    case 'snake':
+      // 下划线：单词之间用下划线连接，全部小写
+      return words.join('_')
+
+    case 'space':
+      // 空格：单词之间用空格连接，首字母大写
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+
+    default:
+      return text
+  }
+}
+
+/**
  * 根据配置获取翻译服务优先级列表
  */
 function getTranslationServices(): TranslationService[] {
@@ -137,6 +190,25 @@ function getTranslationServices(): TranslationService[] {
     (service): service is TranslationService =>
       service === 'mymemory' || service === 'google' || service === 'baidu'
   )
+}
+
+/**
+ * 获取英文格式配置
+ */
+function getEnglishCaseFormat(): EnglishCaseFormat {
+  const config = vscode.workspace.getConfiguration('autoTranslate')
+  const format = config.get<EnglishCaseFormat>('englishCaseFormat', 'none')
+  // 验证格式是否有效
+  if (
+    format === 'pascal' ||
+    format === 'camel' ||
+    format === 'snake' ||
+    format === 'space' ||
+    format === 'none'
+  ) {
+    return format
+  }
+  return 'none'
 }
 
 /**
@@ -158,17 +230,23 @@ export async function translateText(text: string): Promise<string> {
 
   // 按配置的优先级顺序尝试翻译服务
   const errors: string[] = []
+  let translatedText = ''
 
   for (const service of services) {
     try {
       switch (service) {
         case 'mymemory':
-          return await translateWithMyMemory(text, from, to)
+          translatedText = await translateWithMyMemory(text, from, to)
+          break
         case 'google':
-          return await translateWithGoogleFree(text, from, to)
+          translatedText = await translateWithGoogleFree(text, from, to)
+          break
         case 'baidu':
-          return await translateWithBaidu(text, from, to)
+          translatedText = await translateWithBaidu(text, from, to)
+          break
       }
+      // 如果翻译成功，跳出循环
+      break
     } catch (error: any) {
       errors.push(`${service}: ${error.message}`)
       // 继续尝试下一个服务
@@ -177,5 +255,15 @@ export async function translateText(text: string): Promise<string> {
   }
 
   // 如果所有服务都失败了，抛出错误
-  throw new Error(`所有翻译服务都不可用：\n${errors.join('\n')}\n\n请检查网络连接或配置API密钥`)
+  if (!translatedText) {
+    throw new Error(`所有翻译服务都不可用：\n${errors.join('\n')}\n\n请检查网络连接或配置API密钥`)
+  }
+
+  // 如果是从中文翻译到英文，应用格式设置
+  if (from === 'zh' && to === 'en') {
+    const format = getEnglishCaseFormat()
+    return formatEnglishText(translatedText, format)
+  }
+
+  return translatedText
 }

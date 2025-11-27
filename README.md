@@ -54,6 +54,26 @@
    - 配置 `autoTranslate.baiduAppId` 和 `autoTranslate.baiduAppKey`
    - 确保在 `autoTranslate.translationServices` 中包含 `"baidu"`
 
+### 英文格式设置
+
+当从中文翻译成英文时，可以设置英文单词之间的连接符格式：
+
+1. 打开设置（`Ctrl+,` 或 `Cmd+,`）
+2. 搜索 "autoTranslate"
+3. 找到 `autoTranslate.englishCaseFormat` 配置项
+4. 选择以下格式之一：
+   - **pascal** - 大驼峰（PascalCase）：每个单词首字母大写
+     - 示例：`Hello World` → `HelloWorld`
+   - **camel** - 小驼峰（camelCase）：第一个单词小写，后续单词首字母大写
+     - 示例：`Hello World` → `helloWorld`
+   - **snake** - 下划线（snake_case）：单词之间用下划线连接
+     - 示例：`Hello World` → `hello_world`
+   - **space** - 空格（Space Case）：单词之间用空格连接，首字母大写
+     - 示例：`hello world` → `Hello World`
+   - **none** - 不格式化：保持翻译结果原样（默认）
+
+**注意**：此设置仅在从中文翻译成英文时生效，英文翻译成中文时不会应用格式化。
+
 ## 安装方法
 
 ### 方法一：开发模式运行（推荐用于测试）
