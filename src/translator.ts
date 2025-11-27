@@ -158,6 +158,44 @@ type TranslationService = 'mymemory' | 'google' | 'baidu'
 type EnglishCaseFormat = 'pascal' | 'camel' | 'snake' | 'space' | 'none'
 
 /**
+ * 检测文本是否为驼峰格式（PascalCase 或 camelCase）
+ */
+function isCamelCase(text: string): boolean {
+  // 检查是否包含大写字母，且没有空格、下划线或连字符
+  // 例如：HelloWorld, helloWorld, getUserName
+  return /^[a-z]+[A-Z]/.test(text) || /^[A-Z][a-z]+[A-Z]/.test(text)
+}
+
+/**
+ * 将驼峰格式的文本拆分为单词数组
+ */
+function splitCamelCase(text: string): string[] {
+  // 使用正则表达式匹配：小写字母+大写字母的边界，或连续的大写字母
+  // 例如：HelloWorld -> [Hello, World]
+  //      helloWorld -> [hello, World]
+  //      getUserName -> [get, User, Name]
+  //      XMLHttpRequest -> [XML, Http, Request]
+  return text
+    .replace(/([a-z])([A-Z])/g, '$1 $2') // 在小写和大写之间插入空格
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // 在连续大写字母和后面小写字母之间插入空格
+    .split(/\s+/)
+    .filter(word => word.length > 0)
+}
+
+/**
+ * 将驼峰格式的英文文本转换为空格分隔的格式，以便翻译服务正确理解
+ */
+function normalizeEnglishForTranslation(text: string): string {
+  // 如果文本是驼峰格式，先拆分成单词
+  if (isCamelCase(text)) {
+    const words = splitCamelCase(text)
+    return words.join(' ').toLowerCase()
+  }
+  // 如果不是驼峰格式，保持原样
+  return text
+}
+
+/**
  * 将英文文本转换为指定格式
  */
 function formatEnglishText(text: string, format: EnglishCaseFormat): string {
@@ -250,6 +288,12 @@ export async function translateText(text: string): Promise<string> {
   const from = detectedLang === 'zh' ? 'zh' : 'en'
   const to = targetLang === 'zh' ? 'zh' : 'en'
 
+  // 如果是英文且是驼峰格式，先转换为空格分隔的格式以便翻译
+  let textToTranslate = text
+  if (from === 'en' && isCamelCase(text)) {
+    textToTranslate = normalizeEnglishForTranslation(text)
+  }
+
   // 获取配置的翻译服务优先级列表
   const services = getTranslationServices()
 
@@ -266,13 +310,13 @@ export async function translateText(text: string): Promise<string> {
     try {
       switch (service) {
         case 'mymemory':
-          translatedText = await translateWithMyMemory(text, from, to)
+          translatedText = await translateWithMyMemory(textToTranslate, from, to)
           break
         case 'google':
-          translatedText = await translateWithGoogleFree(text, from, to)
+          translatedText = await translateWithGoogleFree(textToTranslate, from, to)
           break
         case 'baidu':
-          translatedText = await translateWithBaidu(text, from, to)
+          translatedText = await translateWithBaidu(textToTranslate, from, to)
           break
       }
       // 如果翻译成功，跳出循环
