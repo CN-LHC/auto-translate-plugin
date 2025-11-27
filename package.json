@@ -32,6 +32,15 @@
         "mac": "cmd+shift+t"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "autoTranslate.translate",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Auto Translate",
       "properties": {
