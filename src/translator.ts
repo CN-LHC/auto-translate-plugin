@@ -63,6 +63,17 @@ async function translateWithBaidu(text: string, from: string, to: string): Promi
 }
 
 /**
+ * 将语言代码转换为 MyMemory API 需要的格式
+ */
+function convertLangCodeForMyMemory(lang: string): string {
+  // MyMemory API 需要完整的语言代码
+  if (lang === 'zh') {
+    return 'zh-CN'
+  }
+  return lang
+}
+
+/**
  * 使用 MyMemory Translation API (免费，无需API密钥)
  */
 async function translateWithMyMemory(
@@ -71,8 +82,12 @@ async function translateWithMyMemory(
   toLang: string
 ): Promise<string> {
   try {
+    // 转换语言代码为 MyMemory API 需要的格式
+    const fromLangCode = convertLangCodeForMyMemory(fromLang)
+    const toLangCode = convertLangCodeForMyMemory(toLang)
+
     const encodedText = encodeURIComponent(text)
-    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${fromLang}|${toLang}`
+    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${fromLangCode}|${toLangCode}`
 
     const response = await axios.get(url)
 
@@ -93,15 +108,30 @@ async function translateWithMyMemory(
 }
 
 /**
+ * 将语言代码转换为 Google Translate API 需要的格式
+ */
+function convertLangCodeForGoogle(lang: string): string {
+  // Google Translate API 需要完整的语言代码
+  if (lang === 'zh') {
+    return 'zh-CN'
+  }
+  return lang
+}
+
+/**
  * 使用免费的Google Translate API（无需API密钥）
  * 注意：这个方法可能不稳定，建议使用官方API
  */
 async function translateWithGoogleFree(text: string, from: string, to: string): Promise<string> {
+  // 转换语言代码为 Google Translate API 需要的格式
+  const fromLangCode = convertLangCodeForGoogle(from)
+  const toLangCode = convertLangCodeForGoogle(to)
+
   const url = `https://translate.googleapis.com/translate_a/single`
   const params = {
     client: 'gtx',
-    sl: from,
-    tl: to,
+    sl: fromLangCode,
+    tl: toLangCode,
     dt: 't',
     q: text
   }
